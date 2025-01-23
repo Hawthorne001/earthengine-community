@@ -50,7 +50,7 @@ Implementation:
    4. Uses Gemini image recognition to analyze the content and relevance
       of the retrieved map tile.
    5a. If the map tile is deemed relevant to the user's query, the agent
-      displays the map tile using matplotlib and exits successfuly.
+      displays the map tile using matplotlib and exits successfully.
    5b. If the map tile is not satisfactory, the agent tries again, using
       the LLM's feedback to refine the EE code.
 
@@ -145,7 +145,7 @@ class Gemini(LLM):
 
   def __init__(self):
     self._text_model = genai.GenerativeModel('gemini-1.5-pro-latest')
-    self._image_model = genai.GenerativeModel('gemini-pro-vision')
+    self._image_model = genai.GenerativeModel('gemini-1.5-pro-latest')
     self._chat_proxy = self._text_model.start_chat(history=[])
 
   def chat(self, question: str, temperature: Optional[float] = None) -> str:
@@ -157,13 +157,13 @@ class Gemini(LLM):
       response = ''
       try:
         response = self._chat_proxy.send_message(
-          brief + question,
-          generation_config={
-              'temperature': temperature,
-              # Use a generous but limited output size to encourage in-depth
-              # replies.
-              'max_output_tokens': 5000,
-          }
+            brief + question,
+            generation_config={
+                'temperature': temperature,
+                # Use a generous but limited output size to encourage in-depth
+                # replies.
+                'max_output_tokens': 5000,
+            }
         )
         if not response.parts:
           raise ValueError(
@@ -205,13 +205,22 @@ class Gemini(LLM):
         'parts': [
             {
                 'text': """
-'You are an expert visual analyst who never hallucinates
-things you don't actually see. Describe what you see in
-the image in as much detail as possible. However, avoid
-guessing - if you see vague pixelated shapes, describe
-what they look like geometrically rather than jumping to
-conclusions about what they might represent. Analyze the
-image content, colors, patterns, and features.
+You are an objective, precise overhead imagery analyst. Describe what the
+provided map tile depicts in terms of:
+
+    1. The colors, textures, and patterns visible in the image.
+    2. The spatial distribution, shape, and extent of distinct features or regions.
+    3. Any notable contrasts, boundaries, or gradients between different areas.
+
+Avoid making assumptions about the specific geographic location, time period,
+or cause of the observed features. Focus solely on the literal contents of the
+image itself.
+
+If the image is ambiguous or unclear, state so directly. Do not speculate or
+hypothesize beyond what is directly visible.
+
+Use clear, concise language. Avoid subjective interpretations or analogies.
+Organize your response into structured paragraphs.
 """
             },
             {'inline_data': image},
@@ -247,7 +256,7 @@ def get_tile_url_and_code(
     llm: an LLM instance
     question: a text prompt containing the user question
     recommendation: an optional text string containing recommendations
-      from the previous interations
+      from the previous iterations
   Returns:
     a tuple of two strings, the URL extracted from running LLM-generated
       Earth Engine code and the code that produced the URL.
@@ -272,10 +281,10 @@ def run_llm_code(
     llm: an LLM instance
     question: a text prompt containing the user question
     recommendation: an optional text string containing recommendations
-      from the previous interations
+      from the previous iterations
     code_callback:
       a function accepting a string (code output) and returning the value
-      extracted from it (or rasing an exception)
+      extracted from it (or raising an exception)
 
   Returns:
     a tuple of two strings, the result of running code_callback on the output
@@ -409,7 +418,7 @@ def run_agent(
       codes.append(code)
       evals.append(evaluation)
       recommendation_question = (
-          """Given the history of previous attempts, what would you recommend to
+          f"""Given the history of previous attempts, what would you recommend to
           do differently in the future code to answer the given request? Do
           not comment on cosmetic things like code style; concentrate on
           substantive suggestions. Output your recommendation in a form that
