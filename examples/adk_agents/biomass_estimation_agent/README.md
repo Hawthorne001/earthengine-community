@@ -40,7 +40,7 @@ An example interaction is shown below.
 
 3.  **Configuration**
 
-    *   Modify `.env` to use your project ID and region.
+    *   Modify `.env` to use your project ID.
 
 4.  **Authentication**
 

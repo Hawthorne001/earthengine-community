@@ -13,7 +13,6 @@ from . import prompts
 from . import tools
 
 _PROJECT_ID = os.environ.get('GOOGLE_CLOUD_PROJECT')
-_REGION = os.environ.get('GOOGLE_CLOUD_LOCATION')
 
 
 @functools.cache
@@ -45,14 +44,15 @@ def _initialize_earth_engine():
 
 @functools.cache
 def _initialize_vertex_ai():
-  """Initializes the Vertex AI client exactly once."""
+  """Initializes the Vertex AI client with the global endpoint."""
   try:
     logging.info(
-        'Initializing Vertex AI for project: %s in location: %s',
+        'Initializing Vertex AI for project: %s',
         _PROJECT_ID,
-        _REGION,
     )
-    vertexai.init(project=_PROJECT_ID, location=_REGION)
+    vertexai.init(
+        project=_PROJECT_ID,
+    )
     logging.info('Vertex AI initialized successfully.')
   except Exception as e:
     logging.exception('Failed to initialize Vertex AI: %s', e)
@@ -66,7 +66,7 @@ def root_agent() -> llm_agent.Agent:
 
   return llm_agent.Agent(
       name='biomass_estimation_agent',
-      model='gemini-2.5-pro',
+      model='gemini-flash-latest',
       description='Agent to answer questions about above ground biomass.',
       tools=[
           tools.get_esa_biomass_stats,
